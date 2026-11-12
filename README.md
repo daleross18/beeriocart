@@ -51,4 +51,10 @@ is a trademark of Nintendo.
   - `karts-in-japan.jpg`: "Mario Kart in Japan" by Jason Scott, CC BY 2.0
   - `monkey-kart-tokyo.jpg`, `yoyogi-karts.jpg`: Syced, CC0
   - `arcade-gp2.jpg`: GuiltyGearFan37, CC0
+- Music (`assets/music`), from SuperTuxKart, converted from Ogg to MP3:
+  - "Kart Grand Prix" by Weirwood, CC BY-SA 3.0
+  - "SuperTuxKart Theme" by Claude Werner, CC BY-SA 3.0
+  - "Jumping to the Stars" by Geek Penguin, remake by Heuchi1, CC BY-SA 3.0
+  - "Penguin Party" by Magne Djupvik, CC BY-SA 3.0+
+  - "Boom Boom Boom" by Keith Baylis aka Vim, CC BY-SA 4.0
 - Type: Kanit by Cadson Demak, SIL Open Font License.

@@ -512,6 +512,30 @@ main > section:first-child { margin-top: 26px; }
 .chaos-btn[aria-pressed="false"] { background: #5d4f8d; }
 .chaos-btn:active { translate: 2px 2px; box-shadow: 2px 2px 0 var(--ink); }
 
+.music { position: fixed; left: 14px; bottom: 14px; z-index: 6; display: flex; gap: 8px; align-items: center; }
+.music button {
+  padding: 8px 14px 9px;
+  background: var(--green); color: #fff;
+  border: 4px solid var(--ink); border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--ink);
+  font: italic 800 16px/1 var(--display);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.music button[aria-pressed="false"] { background: #5d4f8d; }
+.music #music-next { background: var(--yellow); color: var(--ink); }
+.music button:active { translate: 2px 2px; box-shadow: 2px 2px 0 var(--ink); }
+.now {
+  position: absolute; left: 0; bottom: calc(100% + 8px);
+  margin: 0; padding: 4px 12px 5px;
+  max-width: min(78vw, 420px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--ink); color: #fff;
+  border: 2px solid #fff; border-radius: 999px;
+  font: italic 600 14px/1.2 var(--display);
+}
+.now[hidden] { display: none; }
+
 body.calm .sticker, body.calm .hs, body.calm .ticker-track { animation: none; }
 body.calm .lane-car { transition: none; }
 
@@ -540,4 +564,7 @@ body.calm .lane-car { transition: none; }
   .polaroid { width: 150px; }
   .polaroid img { height: 130px; }
   .tab { margin-left: 4px; }
+  .music { left: 10px; bottom: 10px; gap: 6px; }
+  .music button, .chaos-btn { font-size: 14px; padding: 7px 11px 8px; border-width: 3px; }
+  .chaos-btn { right: 10px; bottom: 10px; }
 }

@@ -384,6 +384,79 @@
     resizeTimer = setTimeout(layStickers, 200);
   });
 
+  // ---------- music ----------
+  (function () {
+    var TRACKS = [
+      { file: "kart_grand_prix", title: "Kart Grand Prix", by: "Weirwood" },
+      { file: "supertuxkart_theme", title: "SuperTuxKart Theme", by: "Claude Werner" },
+      { file: "penguin_party", title: "Penguin Party", by: "Magne Djupvik" },
+      { file: "jumping_to_the_stars", title: "Jumping to the Stars", by: "Geek Penguin and Heuchi1" },
+      { file: "boom_boom_boom", title: "Boom Boom Boom", by: "Keith Baylis aka Vim" }
+    ];
+    var toggle = document.getElementById("music-toggle");
+    var next = document.getElementById("music-next");
+    var now = document.getElementById("now");
+    var audio = new Audio();
+    audio.preload = "none";
+    audio.volume = 0.6;
+    var index = 0;
+    var want = true;
+    try { want = localStorage.getItem("beerio-music") !== "off"; } catch (e) { /* private mode */ }
+
+    function remember() {
+      try { localStorage.setItem("beerio-music", want ? "on" : "off"); } catch (e) { /* private mode */ }
+    }
+    function load(i) {
+      index = (i + TRACKS.length) % TRACKS.length;
+      audio.src = "assets/music/" + TRACKS[index].file + ".mp3";
+    }
+    function start() {
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { /* blocked until the first tap */ });
+    }
+    function render() {
+      var playing = !audio.paused;
+      toggle.setAttribute("aria-pressed", String(playing));
+      toggle.textContent = "Music: " + (playing ? "on" : "off");
+      now.hidden = !playing;
+      now.textContent = "Now playing: " + TRACKS[index].title + " by " + TRACKS[index].by;
+    }
+
+    // Browsers only allow sound after a tap or key press, so the first one starts the music.
+    function firstTouch(e) {
+      if (e.target.closest && e.target.closest("#music")) return;
+      if (want && audio.paused) start();
+    }
+    function stopWaiting() {
+      document.removeEventListener("click", firstTouch, true);
+      document.removeEventListener("keydown", firstTouch, true);
+    }
+
+    audio.addEventListener("play", function () { stopWaiting(); render(); });
+    audio.addEventListener("pause", render);
+    audio.addEventListener("ended", function () { load(index + 1); start(); });
+
+    toggle.addEventListener("click", function () {
+      want = audio.paused;
+      remember();
+      if (want) start(); else audio.pause();
+    });
+    next.addEventListener("click", function () {
+      load(index + 1);
+      want = true;
+      remember();
+      start();
+    });
+
+    load(0);
+    render();
+    if (want) {
+      document.addEventListener("click", firstTouch, true);
+      document.addEventListener("keydown", firstTouch, true);
+      start();
+    }
+  })();
+
   // ---------- demo data (?demo in the URL) ----------
   function demoResults() {
     var rand = rng(41);
