@@ -33,4 +33,7 @@ window.BEERIO_RESULTS = [
   { cup: "leaf", date: "2026-11-12",
     scores: { cal: 51, dale: 50, tommy: 39, miles: 32, nate: 28 },
     photo: "scoreboards/leaf.jpg" },
+  { cup: "special", date: "2026-11-12",
+    scores: { tommy: 57, dale: 46, cal: 37, miles: 33, nate: 26 },
+    photo: "scoreboards/special.jpg" },
 ];
