@@ -39,4 +39,12 @@ window.BEERIO_RESULTS = [
   { cup: "lightning", date: "2026-11-12",
     scores: { dale: 47, cal: 46, tommy: 40, miles: 33, nate: 24 },
     photo: "scoreboards/lightning.jpg" },
+  // Egg Cup: no photo. Dale reported the order (Cal, Dale, Tommy, Miles, Nate) with 3 points
+  // between each. The gaps are real; the winning score of 46 is an estimate.
+  { cup: "egg", date: "2026-11-12",
+    scores: { cal: 46, dale: 43, tommy: 40, miles: 37, nate: 34 } },
+  // Triforce Cup: Dale raced as Roy this cup (to be confirmed); others as before.
+  { cup: "triforce", date: "2026-11-12",
+    scores: { dale: 42, cal: 39, miles: 38, tommy: 37, nate: 22 },
+    photo: "scoreboards/triforce.jpg" },
 ];
