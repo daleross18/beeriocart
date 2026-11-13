@@ -47,4 +47,8 @@ window.BEERIO_RESULTS = [
   { cup: "triforce", date: "2026-11-12",
     scores: { dale: 42, cal: 39, miles: 38, tommy: 37, nate: 22 },
     photo: "scoreboards/triforce.jpg" },
+  // Cup 11, entered as Crossing Cup by race order (cup and Dale = Roy to be confirmed).
+  { cup: "crossing", date: "2026-11-12",
+    scores: { dale: 52, tommy: 41, cal: 36, nate: 24, miles: 22 },
+    photo: "scoreboards/crossing.jpg" },
 ];
