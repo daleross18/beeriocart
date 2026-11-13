@@ -25,8 +25,8 @@ window.BEERIO_RESULTS = [
 - Entries stay in the order the cups were raced. The last entry drives the
   "up 1 / down 1" movement on the standings board.
 
-Overall order is total points, then cups won. The standings board shows both,
-and the Season stats section (title race chart, trophy cabinet, awards) is
+Overall order is cups won, then total points. The standings board shows both,
+and the Season stats section (points race chart, trophy cabinet, awards) is
 worked out from the same scores.
 
 Driver colors, car sprites and the cup and track list are in `data.js`.

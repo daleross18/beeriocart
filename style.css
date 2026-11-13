@@ -293,9 +293,10 @@ main > section:first-child { margin-top: 26px; }
 .stat { display: flex; flex-direction: column; align-items: flex-end; white-space: nowrap; }
 .stat b { font: italic 900 clamp(38px, 6.5vw, 58px)/.95 var(--display); }
 .stat small { font: italic 800 13px/1 var(--display); text-transform: uppercase; margin-top: 2px; }
-.stat.pts { min-width: 122px; }
-.stat.wins { min-width: 104px; padding-right: 18px; border-right: 4px solid var(--ink); align-self: stretch; justify-content: center; }
-.stat.wins b { font-size: clamp(30px, 5vw, 44px); display: flex; align-items: center; gap: 6px; }
+.stat.major { min-width: 122px; }
+.stat.minor { min-width: 104px; padding-right: 18px; border-right: 4px solid var(--ink); align-self: stretch; justify-content: center; }
+.stat.minor b { font-size: clamp(30px, 5vw, 44px); }
+.stat.wins b { display: flex; align-items: center; gap: 6px; }
 .stat.wins b img { width: .8em; height: .8em; }
 .board-note {
   margin: 18px 0 0;
@@ -531,6 +532,8 @@ main > section:first-child { margin-top: 26px; }
 .matrix td.nil { color: #b1aac0; font-weight: 400; }
 .matrix .tot { font: italic 900 24px/1 var(--display); border-left: 4px solid var(--ink); padding-inline: 14px; }
 .matrix thead .tot { font-size: 16px; text-transform: uppercase; }
+.matrix .cupscol { font: italic 900 24px/1 var(--display); padding-inline: 12px; background: var(--yellow); }
+.matrix thead .cupscol { font-size: 16px; text-transform: uppercase; }
 .matrix-key { margin: 8px 8px 4px; font-size: 14px; color: #4b4266; }
 
 /* ---------- polaroids ---------- */
@@ -615,9 +618,10 @@ body.calm .lane-car { transition: none; }
   .row { grid-template-columns: 46px 1fr auto auto; padding: 8px 10px 8px 4px; border-left-width: 12px; min-height: 70px; gap: 4px 8px; }
   .stat b { font-size: 32px; }
   .stat small { font-size: 10px; }
-  .stat.pts { min-width: 58px; }
-  .stat.wins { min-width: 0; padding-right: 8px; border-right-width: 3px; }
-  .stat.wins b { font-size: 24px; gap: 3px; }
+  .stat.major { min-width: 58px; }
+  .stat.minor { min-width: 0; padding-right: 8px; border-right-width: 3px; }
+  .stat.minor b { font-size: 24px; }
+  .stat.wins b { gap: 3px; }
   .stats-grid { grid-template-columns: 1fr; }
   .awards { grid-template-columns: 1fr 1fr; gap: 36px 14px; }
   .award-val { font-size: 23px; }

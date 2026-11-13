@@ -9,30 +9,31 @@ window.BEERIO_DATA = {
     { id: "nate",  name: "Nate",  color: "#9b4dff", car: "car_blue_1", tint: "hue-rotate(62deg) saturate(1.2)" }
   ],
 
-  // The 12 original Mario Kart 8 Deluxe cups, in game order.
+  // The 12 original Mario Kart 8 Deluxe cups, in the order the group is racing them:
+  // column by column on the cup select screen (Mushroom, Shell, Flower, Banana, ...).
   // icon: file in assets/emoji (cups) or assets/track (tracks), or a full path.
   cups: [
     { id: "mushroom", name: "Mushroom Cup", icon: "mushroom", color: "#e60012", tracks: [
       ["Mario Kart Stadium", "stadium"], ["Water Park", "ferris_wheel"],
       ["Sweet Sweet Canyon", "lollipop"], ["Thwomp Ruins", "rock"] ] },
-    { id: "flower", name: "Flower Cup", icon: "blossom", color: "#ff7a00", tracks: [
-      ["Mario Circuit", "racing_car"], ["Toad Harbor", "ship"],
-      ["Twisted Mansion", "ghost"], ["Shy Guy Falls", "gem_stone"] ] },
-    { id: "star", name: "Star Cup", icon: "star", color: "#f0b400", tracks: [
-      ["Sunshine Airport", "airplane"], ["Dolphin Shoals", "dolphin"],
-      ["Electrodrome", "mirror_ball"], ["Mount Wario", "snow_capped_mountain"] ] },
-    { id: "special", name: "Special Cup", icon: "crown", color: "#7a3cff", tracks: [
-      ["Cloudtop Cruise", "cloud"], ["Bone-Dry Dunes", "bone"],
-      ["Bowser's Castle", "fire"], ["Rainbow Road", "rainbow"] ] },
     { id: "shell", name: "Shell Cup", icon: "turtle", color: "#22b14c", tracks: [
       ["Wii Moo Moo Meadows", "cow_face"], ["GBA Mario Circuit", "chequered_flag"],
       ["DS Cheep Cheep Beach", "tropical_fish"], ["N64 Toad's Turnpike", "motorway"] ] },
+    { id: "flower", name: "Flower Cup", icon: "blossom", color: "#ff7a00", tracks: [
+      ["Mario Circuit", "racing_car"], ["Toad Harbor", "ship"],
+      ["Twisted Mansion", "ghost"], ["Shy Guy Falls", "gem_stone"] ] },
     { id: "banana", name: "Banana Cup", icon: "banana", color: "#e3b600", tracks: [
       ["GCN Dry Dry Desert", "cactus"], ["SNES Donut Plains 3", "doughnut"],
       ["N64 Royal Raceway", "castle"], ["3DS DK Jungle", "gorilla"] ] },
+    { id: "star", name: "Star Cup", icon: "star", color: "#f0b400", tracks: [
+      ["Sunshine Airport", "airplane"], ["Dolphin Shoals", "dolphin"],
+      ["Electrodrome", "mirror_ball"], ["Mount Wario", "snow_capped_mountain"] ] },
     { id: "leaf", name: "Leaf Cup", icon: "maple_leaf", color: "#c0611a", tracks: [
       ["DS Wario Stadium", "money_bag"], ["GCN Sherbet Land", "shaved_ice"],
       ["3DS Music Park", "musical_notes"], ["N64 Yoshi Valley", "national_park"] ] },
+    { id: "special", name: "Special Cup", icon: "crown", color: "#7a3cff", tracks: [
+      ["Cloudtop Cruise", "cloud"], ["Bone-Dry Dunes", "bone"],
+      ["Bowser's Castle", "fire"], ["Rainbow Road", "rainbow"] ] },
     { id: "lightning", name: "Lightning Cup", icon: "high_voltage", color: "#00a2e8", tracks: [
       ["DS Tick-Tock Clock", "mantelpiece_clock"], ["3DS Piranha Plant Slide", "potted_plant"],
       ["Wii Grumble Volcano", "volcano"], ["N64 Rainbow Road", "comet"] ] },

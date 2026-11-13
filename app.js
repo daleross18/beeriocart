@@ -54,7 +54,7 @@
     return rows;
   }
 
-  // Overall table: points, then cups won, then roster order.
+  // Overall table: cups won, then points, then roster order.
   function standings(list) {
     var rows = players.map(function (p, i) {
       return { p: p, order: i, pts: 0, wins: 0, won: [], played: 0, best: null };
@@ -70,7 +70,7 @@
         if (!x.best || e.v > x.best.v) x.best = { v: e.v, cup: r.cup };
       });
     });
-    rows.sort(function (a, b) { return b.pts - a.pts || b.wins - a.wins || a.order - b.order; });
+    rows.sort(function (a, b) { return b.wins - a.wins || b.pts - a.pts || a.order - b.order; });
     rows.forEach(function (x, i) {
       var prev = rows[i - 1];
       x.rank = prev && prev.pts === x.pts && prev.wins === x.wins ? prev.rank : i + 1;
@@ -80,7 +80,9 @@
 
   var table = standings(results);
   var before = results.length > 1 ? standings(results.slice(0, -1)) : null;
-  var leaderPts = table[0].pts;
+  // The overall leader is whoever has won the most cups. Points still get their own race.
+  var leaderPts = Math.max.apply(null, table.map(function (x) { return x.pts; }));
+  var byPoints = table.slice().sort(function (a, b) { return b.pts - a.pts; });
 
   // ---------- ticker ----------
   (function () {
@@ -133,7 +135,6 @@
         } else {
           meta.push("<span>hasn't raced yet</span>");
         }
-        if (x.rank > 1) meta.push("<span><b>" + (leaderPts - x.pts) + "</b> behind</span>");
         if (before) {
           var d = prevRank[x.p.id] - x.rank;
           if (d > 0) meta.push('<span class="move up">up ' + d + "</span>");
@@ -147,17 +148,17 @@
         '<div class="carbox">' + carImg(x.p) + "</div>" +
         '<div class="who"><div class="name">' + esc(x.p.name) + "</div>" +
         (meta.length ? '<div class="meta">' + meta.join("") + "</div>" : "") + "</div>" +
-        '<div class="stat wins"><b><img src="assets/stk/cup_gold.png" alt="">' + x.wins + "</b><small>" + (x.wins === 1 ? "cup won" : "cups won") + "</small></div>" +
-        '<div class="stat pts"><b>' + x.pts + "</b><small>points</small></div>" +
+        '<div class="stat minor pts"><b>' + x.pts + "</b><small>points</small></div>" +
+        '<div class="stat major wins"><b><img src="assets/stk/cup_gold.png" alt="">' + x.wins + "</b><small>" + (x.wins === 1 ? "cup won" : "cups won") + "</small></div>" +
         "</div>";
     }).join("");
 
-    document.getElementById("board-note").textContent = results.length ? "" :
-      "Everyone's on the grid. Standings fill in after the first cup.";
+    document.getElementById("board-note").textContent = results.length ? "Ranked by cups won. Total points break ties." :
+      "Everyone's on the grid. Most cups won leads, with total points as the tiebreaker.";
 
-    document.getElementById("road").innerHTML = table.map(function (x) {
+    document.getElementById("road").innerHTML = byPoints.map(function (x) {
       var p = leaderPts ? x.pts / leaderPts : 0;
-      var gap = !results.length ? "on the grid" : x.pts === leaderPts ? "leader" : "-" + (leaderPts - x.pts);
+      var gap = !results.length ? "on the grid" : x.pts === leaderPts ? "most points" : "-" + (leaderPts - x.pts);
       return '<div class="lane" style="--c:' + x.p.color + '">' +
         '<div class="lane-name">' + esc(x.p.name) + "<small>" + gap + "</small></div>" +
         '<div class="lane-road"><div class="lane-car" data-p="' + p.toFixed(4) + '" style="--p:0">' +
@@ -171,7 +172,7 @@
     var wrap = document.getElementById("stats");
     if (!results.length) {
       wrap.innerHTML = '<p class="panel stats-empty"><img src="assets/emoji/wrapped_gift.png" alt="">' +
-        "The title race, trophy cabinet and season awards unlock after the first cup.</p>";
+        "The points race, trophy cabinet and season awards unlock after the first cup.</p>";
       return;
     }
 
@@ -254,19 +255,19 @@
     var leaderName = nameList(leaders.map(function (x) { return x.p.name; }));
     if (left > 0) {
       var chasers = table.filter(function (x) { return x.rank > 1; });
-      var alive = chasers.filter(function (x) { return leaderPts - x.pts <= left * MAX_CUP_POINTS; });
-      awards.push({ icon: "coin", title: "Still up for grabs", value: left * MAX_CUP_POINTS + " points",
-        detail: plural(left, "cup") + " left. " + (!chasers.length ? "It's all level at the top."
+      var alive = chasers.filter(function (x) { return leaders[0].wins - x.wins <= left; });
+      awards.push({ icon: "coin", title: "Still up for grabs", value: plural(left, "cup"),
+        detail: left * MAX_CUP_POINTS + " points left too. " + (!chasers.length ? "It's all level at the top."
           : alive.length === chasers.length ? "Everyone can still catch " + leaderName + " on paper."
           : alive.length ? nameList(alive.map(function (x) { return x.p.name; })) + " can still catch " + leaderName + " on paper."
           : "Nobody can catch " + leaderName + " now.") });
     } else {
-      awards.push({ icon: "crown", title: leaders.length > 1 ? "Champions" : "Champion", value: leaderName, detail: leaderPts + " points over 12 cups" });
+      awards.push({ icon: "crown", title: leaders.length > 1 ? "Champions" : "Champion", value: leaderName, detail: plural(leaders[0].wins, "cup") + " won and " + leaders[0].pts + " points" });
     }
 
     wrap.innerHTML =
       '<div class="stats-grid">' +
-        '<div class="chart-panel"><h3>Title race</h3><p class="chart-sub">Total points after each cup</p>' +
+        '<div class="chart-panel"><h3>Points race</h3><p class="chart-sub">Total points after each cup</p>' +
           '<div class="legend">' + table.map(function (x) {
             return '<span><i style="--c:' + x.p.color + '"></i>' + esc(x.p.name) + "</span>";
           }).join("") + "</div>" +
@@ -279,7 +280,7 @@
           '<p class="award-val">' + esc(a.value) + '</p><p class="award-det">' + esc(a.detail) + "</p></div>";
       }).join("") + "</div>";
 
-    // --- title race chart: cumulative points after each cup ---
+    // --- points race chart: cumulative points after each cup ---
     var SURFACE = "#1d1a33";
     var n = results.length;
     var series = table.map(function (x) {
@@ -427,7 +428,7 @@
     var head = "<thead><tr><th></th>" + cups.map(function (c) {
       return '<th><a href="#cup-' + c.id + '" title="' + esc(c.name) + '"><img src="' + icon(c.icon, "emoji") +
         '" alt="' + esc(c.name) + '"></a></th>';
-    }).join("") + '<th class="tot">Total</th></tr></thead>';
+    }).join("") + '<th class="tot">Points</th><th class="cupscol">Cups</th></tr></thead>';
 
     var body = "<tbody>" + table.map(function (x) {
       return '<tr><th scope="row" style="--c:' + x.p.color + '">' + esc(x.p.name) + "</th>" +
@@ -439,7 +440,7 @@
           var top = cupRanking(r)[0].v;
           return "<td" + (v === top ? ' class="best"' : "") + ">" + v + "</td>";
         }).join("") +
-        '<td class="tot">' + x.pts + "</td></tr>";
+        '<td class="tot">' + x.pts + '</td><td class="cupscol">' + x.wins + "</td></tr>";
     }).join("") + "</tbody>";
 
     var el = document.getElementById("matrix");
