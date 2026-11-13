@@ -674,6 +674,37 @@
     }
   })();
 
+  // ---------- site traffic ----------
+  // Counts visits with a free counter service (no cookies, no personal data).
+  // A visit is one browser tab session; a device is counted the first time it shows up.
+  (function () {
+    var API = "https://abacus.jasoncameron.dev/";
+    var NS = "bkgp-ab2c4843";
+    var el = document.getElementById("visits");
+    if (demo || !/\.github\.io$/.test(location.hostname) || !window.fetch) return;
+
+    var now = new Date();
+    var day = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    var newVisit = true, newDevice = false;
+    try {
+      newVisit = !sessionStorage.getItem("beerio-visit");
+      sessionStorage.setItem("beerio-visit", "1");
+      newDevice = !localStorage.getItem("beerio-seen");
+      localStorage.setItem("beerio-seen", "1");
+    } catch (e) { /* private mode: count the visit, skip the device */ }
+
+    function count(key, bump) {
+      return fetch(API + (bump ? "hit/" : "get/") + NS + "/" + key)
+        .then(function (r) { return r.json(); })
+        .then(function (j) { return j.value || 0; });
+    }
+    Promise.all([count("visits", newVisit), count("day-" + day, newVisit), count("devices", newDevice)])
+      .then(function (v) {
+        el.textContent = "Site traffic: " + plural(v[0], "visit") + ", " + v[1] + " today, " + plural(v[2], "device") + ".";
+      })
+      .catch(function () { /* counter unreachable: show nothing */ });
+  })();
+
   // ---------- demo data (?demo in the URL) ----------
   function demoResults() {
     var rand = rng(41);

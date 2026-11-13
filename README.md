@@ -31,6 +31,13 @@ worked out from the same scores.
 
 Driver colors, car sprites and the cup and track list are in `data.js`.
 
+## Site traffic
+
+The footer shows total visits, visits today and devices seen. Counts come from
+the free Abacus counter API (https://abacus.jasoncameron.dev), set up in the
+"site traffic" block of `app.js`. A visit is one browser tab session. Only the
+live github.io site is counted, so local previews and `?demo` don't add to it.
+
 ## Preview
 
 Open `index.html` in a browser. Add `?demo` to the URL to see the page with
