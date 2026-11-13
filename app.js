@@ -57,7 +57,7 @@
   // Overall table: points, then cups won, then roster order.
   function standings(list) {
     var rows = players.map(function (p, i) {
-      return { p: p, order: i, pts: 0, wins: 0, played: 0, best: null };
+      return { p: p, order: i, pts: 0, wins: 0, won: [], played: 0, best: null };
     });
     var byId = {};
     rows.forEach(function (x) { byId[x.p.id] = x; });
@@ -66,7 +66,7 @@
         var x = byId[e.p.id];
         x.pts += e.v;
         x.played += 1;
-        if (e.rank === 1) x.wins += 1;
+        if (e.rank === 1) { x.wins += 1; x.won.push(r.cup); }
         if (!x.best || e.v > x.best.v) x.best = { v: e.v, cup: r.cup };
       });
     });
@@ -127,7 +127,6 @@
     document.getElementById("board").innerHTML = table.map(function (x) {
       var meta = [];
       if (results.length) {
-        meta.push("<span><b>" + x.wins + "</b> " + (x.wins === 1 ? "cup" : "cups") + " won</span>");
         if (x.played) {
           meta.push("<span><b>" + (x.pts / x.played).toFixed(1) + "</b> per cup</span>");
           if (x.played < results.length) meta.push("<span>raced <b>" + x.played + "</b> of " + results.length + "</span>");
@@ -148,7 +147,8 @@
         '<div class="carbox">' + carImg(x.p) + "</div>" +
         '<div class="who"><div class="name">' + esc(x.p.name) + "</div>" +
         (meta.length ? '<div class="meta">' + meta.join("") + "</div>" : "") + "</div>" +
-        '<div class="pts">' + x.pts + "<small>pts</small></div>" +
+        '<div class="stat wins"><b><img src="assets/stk/cup_gold.png" alt="">' + x.wins + "</b><small>" + (x.wins === 1 ? "cup won" : "cups won") + "</small></div>" +
+        '<div class="stat pts"><b>' + x.pts + "</b><small>points</small></div>" +
         "</div>";
     }).join("");
 
@@ -163,6 +163,222 @@
         '<div class="lane-road"><div class="lane-car" data-p="' + p.toFixed(4) + '" style="--p:0">' +
         carImg(x.p) + "</div></div></div>";
     }).join("");
+  })();
+
+  // ---------- season stats: title race chart, trophy cabinet, awards ----------
+  var redrawChart = function () {};
+  (function () {
+    var wrap = document.getElementById("stats");
+    if (!results.length) {
+      wrap.innerHTML = '<p class="panel stats-empty"><img src="assets/emoji/wrapped_gift.png" alt="">' +
+        "The title race, trophy cabinet and season awards unlock after the first cup.</p>";
+      return;
+    }
+
+    function nameList(list) {
+      var seen = {};
+      var names = list.filter(function (n) { return seen[n] ? false : (seen[n] = true); });
+      if (names.length <= 1) return names[0] || "";
+      return names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+    }
+    function cupName(id) { return cupById[id].name; }
+
+    // --- trophy cabinet ---
+    var cabinetRows = table.slice().sort(function (a, b) { return b.wins - a.wins; }).map(function (x) {
+      var cupsWon = x.won.map(function (id) {
+        return '<img src="' + icon(cupById[id].icon, "emoji") + '" alt="' + esc(cupName(id)) + '" title="' + esc(cupName(id)) + '">';
+      }).join("");
+      return '<li style="--c:' + x.p.color + '"><span class="cab-name">' + esc(x.p.name) + "</span>" +
+        (cupsWon ? '<span class="cab-cups">' + cupsWon + "</span>" : '<span class="cab-none">Nothing yet</span>') +
+        '<span class="cab-n">' + x.wins + "</span></li>";
+    }).join("");
+
+    // --- awards ---
+    var awards = [];
+    var bestV = -1, bestWho = [], bestCup = "";
+    var closest = null, blowout = null;
+    var lasts = {};
+    results.forEach(function (r) {
+      var rk = cupRanking(r);
+      rk.forEach(function (e) {
+        if (e.v > bestV) { bestV = e.v; bestWho = [e.p.name]; bestCup = r.cup; }
+        else if (e.v === bestV) { bestWho.push(e.p.name); if (bestCup !== r.cup) bestCup = ""; }
+      });
+      if (rk.length < 2) return;
+      var winners = rk.filter(function (e) { return e.rank === 1; }).map(function (e) { return e.p.name; });
+      var m = { margin: rk[0].v - rk[1].v, cup: r.cup, first: rk[0].p.name, second: rk[1].p.name, winners: winners };
+      if (!closest || m.margin < closest.margin) closest = m;
+      if (!blowout || m.margin > blowout.margin) blowout = m;
+      var low = rk[rk.length - 1].v;
+      if (low < rk[0].v) rk.forEach(function (e) { if (e.v === low) lasts[e.p.name] = (lasts[e.p.name] || 0) + 1; });
+    });
+
+    awards.push({ icon: "hundred_points", title: "Best single cup", value: bestV + " points",
+      detail: nameList(bestWho) + (bestCup ? " in the " + cupName(bestCup) : ", more than once") });
+
+    if (closest) {
+      awards.push({ icon: "stopwatch", title: "Closest finish",
+        value: closest.margin === 0 ? "Dead heat" : plural(closest.margin, "point"),
+        detail: closest.margin === 0 ? nameList(closest.winners) + " tied the " + cupName(closest.cup)
+          : closest.first + " edged " + closest.second + " in the " + cupName(closest.cup) });
+    }
+    if (blowout && closest && blowout.cup !== closest.cup && blowout.margin > 0) {
+      awards.push({ icon: "collision", title: "Biggest blowout", value: plural(blowout.margin, "point"),
+        detail: blowout.first + " over " + blowout.second + " in the " + cupName(blowout.cup) });
+    }
+
+    if (results.length >= 3) {
+      var recent = results.slice(-3), hotV = -1, hotWho = [];
+      players.forEach(function (p) {
+        var sum = 0, raced = false;
+        recent.forEach(function (r) { if (typeof r.scores[p.id] === "number") { sum += r.scores[p.id]; raced = true; } });
+        if (!raced) return;
+        if (sum > hotV) { hotV = sum; hotWho = [p.name]; } else if (sum === hotV) hotWho.push(p.name);
+      });
+      awards.push({ icon: "fire", title: "Hot hand", value: nameList(hotWho), detail: hotV + " points over the last 3 cups" });
+    } else {
+      var last = results[results.length - 1], lr = cupRanking(last);
+      awards.push({ icon: "fire", title: "Latest winner",
+        value: nameList(lr.filter(function (e) { return e.rank === 1; }).map(function (e) { return e.p.name; })),
+        detail: "Won the " + cupName(last.cup) + " with " + lr[0].v });
+    }
+
+    var lastMax = 0, lastWho = [];
+    Object.keys(lasts).forEach(function (n) {
+      if (lasts[n] > lastMax) { lastMax = lasts[n]; lastWho = [n]; } else if (lasts[n] === lastMax) lastWho.push(n);
+    });
+    if (lastMax) awards.push({ icon: "banana", title: "Most last places", value: nameList(lastWho), detail: "Last in " + plural(lastMax, "cup") });
+
+    var left = cups.length - results.length;
+    var leaders = table.filter(function (x) { return x.rank === 1; });
+    var leaderName = nameList(leaders.map(function (x) { return x.p.name; }));
+    if (left > 0) {
+      var chasers = table.filter(function (x) { return x.rank > 1; });
+      var alive = chasers.filter(function (x) { return leaderPts - x.pts <= left * MAX_CUP_POINTS; });
+      awards.push({ icon: "coin", title: "Still up for grabs", value: left * MAX_CUP_POINTS + " points",
+        detail: plural(left, "cup") + " left. " + (!chasers.length ? "It's all level at the top."
+          : alive.length === chasers.length ? "Everyone can still catch " + leaderName + " on paper."
+          : alive.length ? nameList(alive.map(function (x) { return x.p.name; })) + " can still catch " + leaderName + " on paper."
+          : "Nobody can catch " + leaderName + " now.") });
+    } else {
+      awards.push({ icon: "crown", title: leaders.length > 1 ? "Champions" : "Champion", value: leaderName, detail: leaderPts + " points over 12 cups" });
+    }
+
+    wrap.innerHTML =
+      '<div class="stats-grid">' +
+        '<div class="chart-panel"><h3>Title race</h3><p class="chart-sub">Total points after each cup</p>' +
+          '<div class="legend">' + table.map(function (x) {
+            return '<span><i style="--c:' + x.p.color + '"></i>' + esc(x.p.name) + "</span>";
+          }).join("") + "</div>" +
+          '<div class="chart" id="chart"></div>' +
+          '<p class="chart-foot">Hover or tap the chart for scores. Full numbers are in <a href="#points">Every point</a>.</p></div>' +
+        '<div class="panel cabinet"><h3>Trophy cabinet</h3><p class="cab-sub">Cups won by each driver</p><ul>' + cabinetRows + "</ul></div>" +
+      "</div>" +
+      '<div class="awards">' + awards.map(function (a) {
+        return '<div class="panel award"><img src="assets/emoji/' + a.icon + '.png" alt=""><h3>' + esc(a.title) + "</h3>" +
+          '<p class="award-val">' + esc(a.value) + '</p><p class="award-det">' + esc(a.detail) + "</p></div>";
+      }).join("") + "</div>";
+
+    // --- title race chart: cumulative points after each cup ---
+    var SURFACE = "#1d1a33";
+    var n = results.length;
+    var series = table.map(function (x) {
+      var sum = 0, pts = [0], got = [null];
+      results.forEach(function (r) {
+        var v = r.scores[x.p.id];
+        if (typeof v === "number") { sum += v; got.push(v); } else got.push(null);
+        pts.push(sum);
+      });
+      return { p: x.p, pts: pts, got: got };
+    });
+
+    redrawChart = function () {
+      var box = document.getElementById("chart");
+      var W = Math.max(260, box.clientWidth);
+      var small = W < 520;
+      var H = small ? 270 : 330;
+      var m = { l: 38, r: small ? 90 : 104, t: 14, b: 40 };
+      var pw = W - m.l - m.r, ph = H - m.t - m.b;
+      var max = Math.max.apply(null, series.map(function (s) { return s.pts[n]; })) || MAX_CUP_POINTS;
+      var step = [10, 20, 25, 50, 100, 200].filter(function (s) { return max / s <= 5; })[0] || 200;
+      var top = Math.ceil(max / step) * step;
+      function X(i) { return m.l + (i / n) * pw; }
+      function Y(v) { return m.t + ph - (v / top) * ph; }
+
+      var svg = "";
+      for (var t = 0; t <= top; t += step) {
+        svg += '<line class="grid" x1="' + m.l + '" x2="' + (m.l + pw) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>' +
+          '<text class="tick" x="' + (m.l - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + t + "</text>";
+      }
+      var ic = Math.max(12, Math.min(24, pw / n - 3));
+      if (pw / n >= 44) svg += '<text class="tick" x="' + X(0) + '" y="' + (H - m.b + 22) + '" text-anchor="middle">Start</text>';
+      results.forEach(function (r, i) {
+        svg += '<image href="' + icon(cupById[r.cup].icon, "emoji") + '" x="' + (X(i + 1) - ic / 2) + '" y="' + (H - m.b + 8) +
+          '" width="' + ic + '" height="' + ic + '"><title>' + esc(cupName(r.cup)) + "</title></image>";
+      });
+      svg += '<line class="cross" id="cross" x1="0" x2="0" y1="' + m.t + '" y2="' + (m.t + ph) + '" visibility="hidden"/>';
+
+      series.forEach(function (s) {
+        var d = s.pts.map(function (v, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); }).join(" ");
+        svg += '<path d="' + d + '" fill="none" stroke="' + s.p.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+      });
+
+      // End labels, nudged apart so close finishers stay readable.
+      var GAP = 17;
+      var labs = series.map(function (s) { return { s: s, y0: Y(s.pts[n]), y: Y(s.pts[n]) }; })
+        .sort(function (a, b) { return a.y - b.y; });
+      for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < GAP) labs[i].y = labs[i - 1].y + GAP;
+      var floor = m.t + ph + 4;
+      for (var j = labs.length - 1; j >= 0; j--) {
+        var limit = j === labs.length - 1 ? floor : labs[j + 1].y - GAP;
+        if (labs[j].y > limit) labs[j].y = limit;
+      }
+      labs.forEach(function (l) {
+        var ex = X(n);
+        svg += '<line x1="' + (ex + 6) + '" y1="' + l.y0 + '" x2="' + (ex + 15) + '" y2="' + l.y + '" stroke="' + l.s.p.color + '" stroke-width="1.5"/>' +
+          '<circle cx="' + ex + '" cy="' + l.y0 + '" r="5" fill="' + l.s.p.color + '" stroke="' + SURFACE + '" stroke-width="2"/>' +
+          '<text class="endlab" x="' + (ex + 19) + '" y="' + (l.y + 4.5) + '">' + esc(l.s.p.name) + " " + l.s.pts[n] + "</text>";
+      });
+      series.forEach(function (s, k) {
+        svg += '<circle class="hv" data-k="' + k + '" r="4.5" fill="' + s.p.color + '" stroke="' + SURFACE + '" stroke-width="2" visibility="hidden"/>';
+      });
+
+      box.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H +
+        '" role="img" aria-label="Line chart of each driver\'s total points after each cup. ' +
+        esc(table.map(function (x) { return x.p.name + " " + x.pts; }).join(", ")) + '.">' + svg + "</svg>" +
+        '<div class="tip" id="tip" hidden></div>';
+
+      var el = box.querySelector("svg"), tip = box.querySelector("#tip"), cross = box.querySelector("#cross");
+      var dots = box.querySelectorAll(".hv");
+      function hide() {
+        tip.hidden = true;
+        cross.setAttribute("visibility", "hidden");
+        dots.forEach(function (c) { c.setAttribute("visibility", "hidden"); });
+      }
+      function show(ev) {
+        var rect = el.getBoundingClientRect();
+        var px = (ev.clientX - rect.left) * (W / rect.width);
+        var i = Math.max(0, Math.min(n, Math.round(((px - m.l) / pw) * n)));
+        cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
+        dots.forEach(function (c) {
+          var s = series[+c.getAttribute("data-k")];
+          c.setAttribute("cx", X(i)); c.setAttribute("cy", Y(s.pts[i])); c.setAttribute("visibility", "visible");
+        });
+        var rows = series.slice().sort(function (a, b) { return b.pts[i] - a.pts[i]; }).map(function (s) {
+          var extra = i === 0 ? "" : s.got[i] === null ? " (sat out)" : " (+" + s.got[i] + ")";
+          return '<div class="tip-row"><i style="--c:' + s.p.color + '"></i><span>' + esc(s.p.name) + "</span><span>" + s.pts[i] + extra + "</span></div>";
+        }).join("");
+        tip.innerHTML = "<b>" + (i === 0 ? "Start" : "After the " + esc(cupName(results[i - 1].cup))) + "</b>" + rows;
+        tip.hidden = false;
+        var scale = rect.width / W, tx = X(i) * scale;
+        var tw = tip.offsetWidth;
+        tip.style.left = Math.max(0, Math.min(rect.width - tw, tx > rect.width / 2 ? tx - tw - 12 : tx + 12)) + "px";
+      }
+      el.addEventListener("pointermove", show);
+      el.addEventListener("pointerdown", show);
+      el.addEventListener("pointerleave", hide);
+    };
+    redrawChart();
   })();
 
   // ---------- cup cards ----------
@@ -381,7 +597,7 @@
     if (window.innerWidth === lastWidth) return;
     lastWidth = window.innerWidth;
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(layStickers, 200);
+    resizeTimer = setTimeout(function () { redrawChart(); layStickers(); }, 200);
   });
 
   // ---------- music ----------
