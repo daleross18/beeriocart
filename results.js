@@ -17,8 +17,8 @@ window.BEERIO_RESULTS = [
   // Dale = Morton, Cal = Yoshi, Miles = Ludwig, Tommy = Link, Nate = Tanooki Mario
   { cup: "mushroom", date: "2026-11-12",
     scores: { dale: 46, cal: 46, miles: 45, tommy: 44, nate: 32 },
-    photo: "scoreboards/mushroom.jpg", note: "Dale and Cal tied at the top. Four drivers within two points." },
+    photo: "scoreboards/mushroom.jpg" },
   { cup: "shell", date: "2026-11-12",
     scores: { cal: 52, tommy: 46, miles: 42, dale: 41, nate: 31 },
-    photo: "scoreboards/shell.jpg", note: "Cal wins by six and takes the outright lead." },
+    photo: "scoreboards/shell.jpg" },
 ];
